@@ -1,9 +1,29 @@
 import React from "react"
 import { useAuth } from "../context/AuthContext"
 import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 function ProfilePage() {
   const { user } = useAuth()
+  const { deleteAccount } = useAuth()
+  const navigate = useNavigate()
+  console.log(user)
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es permanente."
+    )
+
+    if (!confirmed) return
+
+    try {
+      await deleteAccount()
+      localStorage.setItem("accountDeleted", "true")
+      navigate("/login")      
+    } catch (error) {
+      console.error("Error deleting account:", error)
+      alert("Ocurrió un error al eliminar la cuenta.")
+    }
+  }
 
   return (
     <main className="px-4 md:px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-5 mt-16 
@@ -20,7 +40,7 @@ function ProfilePage() {
               Perfil del Usuario
             </p>
             <p className="text-base font-normal text-gray-500 dark:text-gray-300">
-              Administra tu cuenta y los detalles de la empresa
+              Administra tu cuenta y demás detalles
             </p>
           </div>
         </div>
@@ -49,7 +69,7 @@ function ProfilePage() {
                 <p className="text-sm font-medium text-amber-700 bg-amber-100 
                   dark:text-amber-300 dark:bg-amber-900/40 
                   py-1 px-3 rounded-full self-start">
-                  {user?.role || "Transportista"}
+                  {user?.rol || "Transportista"}
                 </p>
               </div>
 
@@ -159,8 +179,14 @@ function ProfilePage() {
           p-6 bg-white dark:bg-black/20 rounded-xl 
           border border-gray-200 dark:border-white/10 backdrop-blur-sm">
 
-          <button className="w-full sm:w-auto text-red-600 dark:text-red-400 
-            hover:text-red-800 dark:hover:text-red-300 text-sm font-medium">
+          <button
+            onClick={handleDeleteAccount}
+            className="flex w-full sm:w-auto items-center justify-center h-12 px-6 
+            rounded-lg bg-gray-100 dark:bg-white/10 
+            w-full sm:w-auto text-red-600 dark:text-red-400 
+            hover:bg-gray-200 dark:hover:bg-white/20 
+            text-sm font-bold tracking-[0.015em]"
+          >
             Eliminar Cuenta
           </button>
 
@@ -174,7 +200,7 @@ function ProfilePage() {
                 hover:bg-gray-200 dark:hover:bg-white/20 
                 text-sm font-bold tracking-[0.015em]"
             >
-              Salir
+              Volver al Inicio
             </Link>
 
             <Link

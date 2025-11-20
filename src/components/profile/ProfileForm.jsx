@@ -2,33 +2,83 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigate } from "react-router-dom"
+import { useFieldArray} from "react-hook-form"
 
 function ProfileForm() {
   const { user, updateProfile } = useAuth()
   const navigate = useNavigate()
   const [successData, setSuccessData] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
+  // Convertir operationalRegions string → array para los inputs dinámicos
+  const initialRegions = user?.operationalRegions
+    ? user.operationalRegions.split(",").map(r => ({ name: r.trim() }))
+    : []
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm({
     defaultValues: {
-      enterpriseName: user?.enterpriseName || "",
-      contactPerson: user?.contactPerson || "",
-      phone: user?.phone || "",
-      address: user?.address || "",
-      city: user?.city || "",
-      country: user?.country || "",
-      description: user?.description || "",
-      profileImageUrl: user?.profileImageUrl || "",
-      operationalRegions: user?.operationalRegions || "",
-      fleetSize: user?.fleetSize || ""
+    enterpriseName: user?.enterpriseName || "",
+    contactPerson: user?.contactPerson || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    country: user?.country || "",
+    description: user?.description || "",
+    profileImageUrl: user?.profileImageUrl || "",
+    operationalRegions: user?.operationalRegions || "",
+    fleetSize: user?.fleetSize || "",
+    regions: initialRegions
     }
   })
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "regions"
+  })
+
   const onSubmit = async (data) => {
+    const cleanedData = { ...data }
+
+    // -------------------------------------------
+    // Normalize original fields
+    // -------------------------------------------
+
+    // fleetSize
+    if (!cleanedData.fleetSize && cleanedData.fleetSize !== 0) {
+      delete cleanedData.fleetSize
+    }
+
+    // profileImageUrl
+    if (!cleanedData.profileImageUrl?.trim()) {
+      delete cleanedData.profileImageUrl
+    }
+
+    // -------------------------------------------
+    // Convert Array of Regions to String
+    // -------------------------------------------
+
+    const regionList = Array.isArray(cleanedData.regions)
+      ? cleanedData.regions.map(r => r?.name?.trim()).filter(Boolean)
+      : []
+
+    const regionsString = regionList.length > 0
+      ? regionList.join(", ")
+      : ""
+
+    // Save as STRING (Backend)
+    cleanedData.operationalRegions = regionsString
+
+    // "Regions" will no longer be used
+    delete cleanedData.regions
+
+    // -------------------------------------------
+    // Detect Real Changes
+    // -------------------------------------------
+    const changedData = {}
     const editableFields = [
       "enterpriseName",
       "contactPerson",
@@ -42,31 +92,59 @@ function ProfileForm() {
       "profileImageUrl"
     ]
 
-    const payload = {}
-    editableFields.forEach((key) => {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
-    payload[key] = data[key]
+    for (const key of editableFields) {
+      // Special Case: operationalRegions
+      if (key === "operationalRegions") {
+        if ((regionsString || "") !== (user.operationalRegions || "")) {
+          changedData.operationalRegions = regionsString
+        }
+        continue
+      }
+
+      const newValue = cleanedData[key]
+      const oldValue = user[key]
+
+      // Field voluntarily deleted
+      if ((newValue === "" || newValue === undefined) && oldValue) {
+        changedData[key] = ""
+        continue
+      }
+
+      // Field changed
+      if (newValue !== oldValue && newValue !== undefined) {
+        changedData[key] = newValue
+      }
     }
-    })
 
+    // Nothing to update
+    if (Object.keys(changedData).length === 0) {
+      setErrorMessage("No hay cambios para actualizar.")
+      setTimeout(() => setErrorMessage(null), 1000)
+      return
+    }
+
+    // -------------------------------------------
+    // Run Update
+    // -------------------------------------------
     try {
-    const response = await updateProfile(payload)
+      const response = await updateProfile(changedData)
 
-    // Save the message and the updated profile to display it in the component.
-    setSuccessData({
-    message: response?.message || "Perfil actualizado correctamente.",
-    profile: response?.profile || {}
-    })
+      setSuccessData({
+        message: response?.message || "Perfil actualizado correctamente.",
+        profile: response?.profile || {},
+      })
 
+      setErrorMessage(null)
 
-    // Redirect after viewing the message
-    setTimeout(() => navigate("/"), 1200)
+      setTimeout(() => setSuccessData(null), 1000)
+      setTimeout(() => navigate("/"), 1200)
 
     } catch (error) {
-    const serverMsg = error?.response?.data?.message || error?.message
-    setErrorMessage(serverMsg || "No se pudo actualizar el perfil.")
+      const serverMsg = error?.response?.data?.message || error?.message
+      setErrorMessage(serverMsg || "No se pudo actualizar el perfil.")
+      setTimeout(() => setErrorMessage(null), 1000)
     }
-    }
+  }
 
   return (
     <form
@@ -268,7 +346,11 @@ function ProfileForm() {
           <span className="text-sm mb-1 text-neutral-700 dark:text-neutral-300">URL de la Imágen de Perfil</span>
           <input
             {...register("profileImageUrl", {
-              pattern: { value: /^https?:\/\/.+/i, message: "La URL debe ser una dirección válida a la Imágen" }
+              validate: (value) => {
+                if (!value) return true; // empty is valid
+                const regex = /^https?:\/\/.+/i;
+                return regex.test(value) || "La URL debe ser una dirección válida a la imagen";
+              }
             })}
             className="
               px-4 py-2 rounded-lg bg-transparent
@@ -309,24 +391,45 @@ function ProfileForm() {
       {/* Operational regions / fleet size */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        <label className="flex flex-col">
-          <span className="text-sm mb-1 text-neutral-700 dark:text-neutral-300">Regiones Operativas</span>
-          <input
-            {...register("operationalRegions")}
-            className="
-              px-4 py-2 rounded-lg bg-transparent
-              border border-neutral-300 dark:border-neutral-700
-              text-neutral-900 dark:text-neutral-200
-              placeholder-neutral-400
-              focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-              transition
-            "
-            placeholder="NOA, Centro"
-          />
-        </label>
+        {/* REGIONES OPERATIVAS */}
+        <div>
+          <label className="block mb-2 text-sm font-medium">
+            Regiones Operativas
+          </label>
 
+          <div className="space-y-2">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex gap-2 items-center">
+                <input
+                  {...register(`regions.${index}.name`)}
+                  placeholder="Ej: NOA, Cuyo..."
+                  className="px-3 py-2 border rounded-lg w-full"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => remove(index)}
+                  className="px-2 py-1 bg-red-500 text-white rounded">
+                  X
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => append({ name: "" })}
+              className="px-3 py-1 bg-indigo-600 text-white rounded">
+              + Agregar región
+            </button>
+          </div>
+        </div>
+
+        {/* TAMAÑO DE FLOTA */}
         <label className="flex flex-col">
-          <span className="text-sm mb-1 text-neutral-700 dark:text-neutral-300">Tamaño de Flota</span>
+          <span className="text-sm mb-1 text-neutral-700 dark:text-neutral-300">
+            Tamaño de Flota
+          </span>
+
           <input
             type="number"
             {...register("fleetSize", { valueAsNumber: true })}
@@ -339,9 +442,10 @@ function ProfileForm() {
               transition
             "
             min={0}
-            placeholder="Number of vehicles"
+            placeholder="Número de vehículos"
           />
         </label>
+
       </div>
 
       {/* Submit + Cancel */}
