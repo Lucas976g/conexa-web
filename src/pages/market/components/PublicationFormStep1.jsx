@@ -158,11 +158,10 @@ const PublicationFormStep1 = ({ initialData, onSubmit, allowedType }) => {
                     <option value="" disabled>
                       Seleccione un tipo
                     </option>
-                    <option value="general">Carga General</option>
+                    <option value="carga general">Carga General</option>
                     <option value="perecederos">Perecederos</option>
-                    <option value="peligrosa">Carga Peligrosa</option>
                     <option value="granel">Granel</option>
-                    <option value="contenedores">Contenedores</option>
+                    <option value="embalada">Embalada</option>
                   </select>
                   <ChevronDown size={20} className={selectArrowStyles} />
                 </div>
@@ -187,7 +186,7 @@ const PublicationFormStep1 = ({ initialData, onSubmit, allowedType }) => {
                     <option value="" disabled>
                       Seleccione un tipo
                     </option>
-                    <option value="semirremolque">Semirremolque</option>
+                    <option value="semiremolque">Semiremolque</option>
                     <option value="camion_rigido">Camión Rígido</option>
                     <option value="frigorifico">Frigorífico</option>
                     <option value="cisterna">Cisterna</option>
