@@ -1,15 +1,12 @@
 import apiClient from "./apiClient"
 
-// --- LECTURA (GET) ---
-
 /**
  * Obtiene las tarjetas temáticas (Foros) con sus contadores.
  * Endpoint: GET /community/forums
  */
 export const getForums = async () => {
   const response = await apiClient.get("/community/forums")
-  const topics = response.data.topics
-  return topics
+  return response.data.topics
 }
 
 /**
@@ -19,16 +16,16 @@ export const getForums = async () => {
  */
 export const getPosts = async (filters = {}) => {
   const response = await apiClient.get("/community/posts", { params: filters })
-  const posts = response.data.posts
-  return posts
+  return response.data.posts
 }
 
 /**
- * Obtiene el detalle de un post específico (opcional, si no se pasa por estado)
+ * Obtiene el detalle de un post específico (con sus comentarios)
  */
 export const getPostById = async (postId) => {
   const response = await apiClient.get(`/community/posts/${postId}`)
-  return response.data
+  // Devuelve el objeto completo { post, comments }
+  return response.data 
 }
 
 /**
@@ -37,17 +34,17 @@ export const getPostById = async (postId) => {
  */
 export const getPostComments = async (postId) => {
   const response = await apiClient.get(`/community/posts/${postId}/comments`)
-  return response.data
+  return response.data.comments
 }
 
-// --- ESCRITURA (POST/PATCH/DELETE) ---
 
 /**
  * Crea un nuevo post en un tema o en el general.
  * @param {Object} postData - { title, content, topicId }
  */
 export const createPost = async (postData) => {
-  return apiClient.post("/community/posts", postData)
+  const response = await apiClient.post("/community/posts", postData)
+  return response.data
 }
 
 /**
@@ -56,13 +53,32 @@ export const createPost = async (postData) => {
  * @param {string} content 
  */
 export const createComment = async (postId, content) => {
-  return apiClient.post(`/community/posts/${postId}/comments`, { content })
+  const response = await apiClient.post(`/community/posts/${postId}/comments`, { content })
+  return response.data
+}
+
+export const updatePost = async (postId, data) => {
+  const response = await apiClient.patch(`/community/posts/${postId}`, data)
+  // Devolvemos el post actualizado (asumiendo que el BE lo anida en .post)
+  return response.data.post 
+}
+
+export const updateComment = async (commentId, content) => {
+  const response = await apiClient.patch(`/community/comments/${commentId}`, { content })
+  return response.data
+}
+
+export const deletePost = async (postId) => {
+  const response = await apiClient.delete(`/community/posts/${postId}`)
+  return response.data
 }
 
 export const deleteComment = async (commentId) => {
-  return apiClient.delete(`/community/comments/${commentId}`)
+  const response = await apiClient.delete(`/community/comments/${commentId}`)
+  return response.data
 }
 
 export const createSuggestion = async (suggestionData) => {
-  return apiClient.post("/community/suggestions", suggestionData)
+  const response = await apiClient.post("/community/suggestions", suggestionData)
+  return response.data
 }
