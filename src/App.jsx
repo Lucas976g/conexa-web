@@ -1,33 +1,33 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import Sidebar from "./components/layout/Sidebar";
-import Navbar from "./components/layout/Navbar"; // Asegúrate de que este archivo exista
-import { useAuth } from "./context/AuthContext";
+import { Outlet, useLocation } from "react-router-dom"
+import { useEffect, useState } from "react"
+import Sidebar from "./components/layout/Sidebar"
+import Navbar from "./components/layout/NavBar" // Asegúrate de que este archivo exista
+import { useAuth } from "./context/AuthContext"
 
 function App() {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
+  const { isAuthenticated } = useAuth()
+  const location = useLocation()
 
   // Lógica de tema (Dark/Light Mode)
   const [theme, setTheme] = useState(() => {
     if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
+      return "dark"
     }
-    return "light";
-  });
+    return "light"
+  })
 
   useEffect(() => {
     if (theme === "dark") {
-      document.querySelector("html").classList.add("dark");
+      document.querySelector("html").classList.add("dark")
     } else {
-      document.querySelector("html").classList.remove("dark");
+      document.querySelector("html").classList.remove("dark")
     }
-  }, [theme]);
+  }, [theme])
 
   // --- LÓGICA DE NAVEGACIÓN ---
-  const showSidebar = isAuthenticated;
+  const showSidebar = isAuthenticated
   // Solo mostrar Navbar si NO está logueado Y está en la raíz (Home)
-  const showNavbar = !isAuthenticated && location.pathname === "/";
+  const showNavbar = !isAuthenticated && location.pathname === "/"
 
   return (
     // CONTENEDOR PRINCIPAL
@@ -65,7 +65,7 @@ function App() {
         </div>
       </main>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
