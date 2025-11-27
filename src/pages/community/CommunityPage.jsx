@@ -1,48 +1,208 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useAuth } from "../../context/AuthContext"
 import { useCommunityHome } from "../../hooks/useCommunityHome"
 import { getPosts } from "../../services/community.service"
 import { useNavigate } from "react-router-dom"
-import { PlusCircle, Loader, Hash, MessageCircle, ThumbsUp, Folder, Users, Star } from "lucide-react"
-import Navbar from "../../components/layout/Navbar"; 
+import {
+  PlusCircle,
+  Loader,
+  MessageCircle,
+  ThumbsUp,
+  Truck,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+} from "lucide-react"
+import Navbar from "../../components/layout/Navbar"
 
+// --- SUB-COMPONENTE: NOVEDADES (Estático) ---
+const NewsSection = () => (
+  <section className="flex flex-col gap-4 rounded-xl bg-white dark:bg-[#111] p-6 border border-gray-200 dark:border-white/10 shadow-sm h-full">
+    <div className="flex items-center justify-between">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        Novedades de CONEXA
+      </h2>
+      <button className="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-500 hover:opacity-80 transition-opacity">
+        Ver Archivo
+      </button>
+    </div>
 
-// Componente principal del portal comunitario
+    <div className="flex flex-col gap-6">
+      {/* Card 1 */}
+      <div className="flex flex-col md:flex-row gap-4 items-start group cursor-pointer">
+        <div
+          className="w-full md:w-48 h-28 rounded-lg bg-gray-200 dark:bg-neutral-800 bg-cover bg-center shrink-0 border border-gray-100 dark:border-white/5"
+          style={{
+            backgroundImage:
+              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEUduB80o-aHwdJcgmPH8v1Qp83HRtLjyVisP0MpbrfJj8fAP1m1AuK240ilvZxCJ8eXaXucJGALUBzUnkEVnbNyuc7GIX49EhHwP-9b3GRIG3p34kiscYi-D-TuTxKQ9Cmi0FnqkE0E6Skn8r8Q7IG9Ly7yvBI6xnuWE73gQBC0lRAsQNyVy64AAxwpO03XVZmCqY1g21JfOf49aOEUlPTWzSAjQfOu8rHCeUrkVBJRJ5smFUbOks-PmzeqbejhhMa1Y0UWrGrFnc')",
+          }}
+        ></div>
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-amber-500 transition-colors leading-tight">
+            Hito: Avance del 60% en el Tramo Norte
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+            Se ha completado una fase crucial del proyecto, superando las
+            expectativas en la modernización de la infraestructura logística.
+          </p>
+        </div>
+      </div>
+
+      {/* Card 2 */}
+      <div className="flex flex-col md:flex-row gap-4 items-start group cursor-pointer">
+        <div
+          className="w-full md:w-48 h-28 rounded-lg bg-gray-200 dark:bg-neutral-800 bg-cover bg-center shrink-0 border border-gray-100 dark:border-white/5"
+          style={{
+            backgroundImage:
+              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEUduB80o-aHwdJcgmPH8v1Qp83HRtLjyVisP0MpbrfJj8fAP1m1AuK240ilvZxCJ8eXaXucJGALUBzUnkEVnbNyuc7GIX49EhHwP-9b3GRIG3p34kiscYi-D-TuTxKQ9Cmi0FnqkE0E6Skn8r8Q7IG9Ly7yvBI6xnuWE73gQBC0lRAsQNyVy64AAxwpO03XVZmCqY1g21JfOf49aOEUlPTWzSAjQfOu8rHCeUrkVBJRJ5smFUbOks-PmzeqbejhhMa1Y0UWrGrFnc')",
+          }}
+        ></div>
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-amber-500 transition-colors leading-tight">
+            Nuevo Acuerdo de Colaboración Logística
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+            CONEXA firma una alianza estratégica con operadores portuarios para
+            optimizar la cadena de suministro.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+)
+
+// --- SUB-COMPONENTE: KPIs (Estático) ---
+const KPISection = () => (
+  <section className="flex flex-col gap-4">
+    <h2 className="text-xl font-bold text-gray-900 dark:text-white px-1 mt-2">
+      Estado Actual de la Ruta
+    </h2>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* KPI 1 */}
+      <div className="flex flex-col gap-1 rounded-xl bg-white dark:bg-[#111] p-5 border border-gray-200 dark:border-white/10 shadow-sm">
+        <Truck className="text-amber-500 mb-2" size={28} />
+        <p className="text-3xl font-black text-gray-900 dark:text-white">
+          15,000
+        </p>
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Flujo (TEUs)
+        </p>
+      </div>
+
+      {/* KPI 2 */}
+      <div className="flex flex-col gap-1 rounded-xl bg-white dark:bg-[#111] p-5 border border-gray-200 dark:border-white/10 shadow-sm">
+        <CheckCircle2 className="text-blue-500 mb-2" size={28} />
+        <p className="text-3xl font-black text-gray-900 dark:text-white">
+          98.5%
+        </p>
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Eficiencia
+        </p>
+      </div>
+
+      {/* KPI 3 */}
+      <div className="flex flex-col gap-1 rounded-xl bg-white dark:bg-[#111] p-5 border border-gray-200 dark:border-white/10 shadow-sm">
+        <Clock className="text-green-500 mb-2" size={28} />
+        <p className="text-3xl font-black text-gray-900 dark:text-white">48h</p>
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Tránsito Prom.
+        </p>
+      </div>
+    </div>
+  </section>
+)
+
+// --- SUB-COMPONENTE: SIDEBAR DE FOROS (Altura completa) ---
+const ForumsSidebar = ({ forums, activeForum, onForumClick }) => (
+  // CLAVE: h-full flex flex-col para ocupar toda la altura disponible
+  <section className="flex flex-col h-full gap-4 rounded-xl bg-gray-50 dark:bg-[#111] p-6 border border-gray-200 dark:border-white/10">
+    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+      Foros de Impacto
+    </h2>
+
+    <div className="flex flex-col gap-3 flex-1 overflow-y-auto pr-1">
+      {/* Botón "General" */}
+      <button
+        onClick={() => onForumClick("general")}
+        className={`text-left p-4 rounded-lg transition-all border shrink-0 ${
+          activeForum === "general"
+            ? "bg-white dark:bg-white/10 border-amber-500 shadow-md"
+            : "bg-white dark:bg-black/20 border-transparent hover:bg-gray-100 dark:hover:bg-white/5"
+        }`}
+      >
+        <p
+          className={`font-semibold ${
+            activeForum === "general"
+              ? "text-amber-600 dark:text-amber-500"
+              : "text-gray-900 dark:text-white"
+          }`}
+        >
+          Discusión General
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Temas varios de la comunidad.
+        </p>
+      </button>
+
+      {/* Lista Dinámica (Limitamos a 5 para no desbordar visualmente si hay muchos) */}
+      {forums.slice(0, 5).map((forum) => (
+        <button
+          key={forum.id}
+          onClick={() => onForumClick(forum.id)}
+          className={`text-left p-4 rounded-lg transition-all border shrink-0 ${
+            activeForum === forum.id
+              ? "bg-white dark:bg-white/10 border-amber-500 shadow-md"
+              : "bg-white dark:bg-black/20 border-transparent hover:bg-gray-100 dark:hover:bg-white/5"
+          }`}
+        >
+          <p
+            className={`font-semibold ${
+              activeForum === forum.id
+                ? "text-amber-600 dark:text-amber-500"
+                : "text-gray-900 dark:text-white"
+            }`}
+          >
+            {forum.title}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+            {forum.description || "Espacio de discusión."}
+          </p>
+        </button>
+      ))}
+    </div>
+
+    {/* Footer: mt-auto empuja esto al final del contenedor, nivelando visualmente */}
+    <div className="mt-auto pt-4">
+      <button className="flex w-full items-center justify-center gap-2 rounded-lg h-10 bg-amber-500 hover:bg-amber-600 text-white dark:text-black font-bold text-sm transition-colors">
+        Explorar Todos <ArrowRight size={16} />
+      </button>
+    </div>
+  </section>
+)
+
+// --- COMPONENTE PRINCIPAL ---
 const CommunityPage = () => {
   const { isAuthenticated } = useAuth()
   const { forums, feed, loading, error } = useCommunityHome()
+  const navigate = useNavigate()
 
   const [displayedPosts, setDisplayedPosts] = useState([])
   const [activeForum, setActiveForum] = useState("general")
-  const [activeFilter, setActiveFilter] = useState("recent")
-  const navigate = useNavigate()
 
-  // Clases reutilizables
-  const CARD_SURFACE_CLASS =
-    "bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-200 group h-full"
-
-  const TEXT_PRIMARY = "text-gray-900 dark:text-white"
-  const TEXT_SECONDARY = "text-gray-500 dark:text-gray-400"
-
-  // Inicializa las publicaciones
+  // Inicializa posts
   useEffect(() => {
     if (feed && feed.length > 0) {
       setDisplayedPosts(feed)
     }
   }, [feed])
 
-  // Filtrado por foro
+  // Manejo de clicks en foros
   const handleForumClick = async (forumId) => {
     setActiveForum(forumId)
-    setActiveFilter("recent")
-
     try {
       if (forumId === "all") {
-        const allPosts = await getPosts({})
-        setDisplayedPosts(allPosts)
-        return
+        // ... lógica para traer todo
       }
-
       const topicId = forumId === "general" ? "general" : forumId
       const filteredPosts = await getPosts({ topicId })
       setDisplayedPosts(filteredPosts)
@@ -51,211 +211,169 @@ const CommunityPage = () => {
     }
   }
 
-  // Filtrar por popularidad
-  const filterPopular = () => {
-    setActiveFilter("popular")
-    const sorted = [...displayedPosts].sort(
-      (a, b) => (b.commentCount || 0) - (a.commentCount || 0)
-    )
-    setDisplayedPosts(sorted)
-  }
-
-  // Filtrar por publicaciones recientes
-  const filterRecent = () => {
-    setActiveFilter("recent")
-    const sorted = [...displayedPosts].sort(
-      (a, b) => new Date(b.created_at) - new Date(a.created_at)
-    )
-    setDisplayedPosts(sorted)
-  }
-
-  // Calcula tiempo transcurrido
+  // Helpers de tiempo
   const timeAgo = (dateString) => {
     const now = new Date()
     const past = new Date(dateString)
     const diffInHours = Math.floor((now - past) / (1000 * 60 * 60))
-
-    if (diffInHours < 1) return "Hace menos de una hora"
-    if (diffInHours < 24) return `Hace ${diffInHours} horas`
-
-    const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays === 1) return "Hace 1 día"
-    return `Hace ${diffInDays} días`
+    if (diffInHours < 1) return "Reciente"
+    if (diffInHours < 24) return `${diffInHours}h`
+    return `${Math.floor(diffInHours / 24)}d`
   }
 
-  // Estado de carga
   if (loading) {
     return (
-      <main className="min-h-screen bg-white dark:bg-[#0A0A0A] font-display flex flex-col justify-center items-center">
-        <div className="flex flex-col items-center p-8">
-          <Loader size={48} className="animate-spin text-amber-500 mb-4" />
-          <h2 className={`text-2xl font-bold ${TEXT_PRIMARY}`}>Cargando el Portal Comunitario</h2>
-          <p className={`${TEXT_SECONDARY} mt-2`}>Obteniendo foros y publicaciones recientes...</p>
-        </div>
+      <main className="min-h-screen bg-white dark:bg-[#0A0A0A] flex justify-center items-center">
+        <Loader size={48} className="animate-spin text-amber-500" />
       </main>
     )
   }
 
-  if (error) return <div className="p-4 text-red-600">Error al cargar datos.</div>
-
-
-return (
- <>
-  {!isAuthenticated && <Navbar />}
-    <main className="min-h-screen bg-white dark:bg-[#0A0A0A] font-display flex flex-col">
-      <div className="flex-1 px-4 sm:px-8 md:px-12 lg:px-16 py-8">
-        <div className="flex flex-col w-full max-w-7xl mx-auto gap-8">
-
-          {/* Encabezado */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex min-w-72 flex-col gap-1">
-              <h1 className="text-3xl font-black text-gray-900 dark:text-white">Portal de la Comunidad</h1>
-              <p className="text-base font-normal text-gray-500 dark:text-gray-400">Un espacio para la colaboración y discusión de ideas</p>
-            </div>
-          </div>
-
-          {/* Foros */}
-          <section className="flex flex-col gap-4">
-            <h2 className={`text-[22px] font-bold px-4 pb-3 pt-5 ${TEXT_PRIMARY}`}>Foros de Discusión</h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-4">
-
-              {/* Ver Todo */}
-              <div
-                onClick={() => handleForumClick("all")}
-                className={`flex flex-1 gap-3 rounded-xl p-4 flex-col cursor-pointer transition-all ${CARD_SURFACE_CLASS} ${activeForum === "all" ? "border-amber-500 ring-2 ring-amber-500/50 shadow-lg" : "hover:shadow-lg"}`}
-              >
-                <div className="text-amber-500 text-xl flex items-center"><Star size={24} /></div>
-                <div className="flex flex-col gap-1">
-                  <h3 className={`text-base font-bold ${TEXT_PRIMARY}`}>Ver Todo</h3>
-                  <p className={`text-sm ${TEXT_SECONDARY}`}>Todas las publicaciones</p>
-                </div>
-              </div>
-
-              {/* General */}
-              <div 
-                onClick={() => handleForumClick("general")}
-                className={`flex flex-1 gap-3 rounded-xl p-4 flex-col cursor-pointer transition-all ${CARD_SURFACE_CLASS} ${activeForum === "general" ? "border-amber-500 ring-2 ring-amber-500/50 shadow-lg" : "hover:shadow-lg"}`}
-              >
-                <div className="text-amber-500 text-xl flex items-center"><Users size={24} /></div>
-                <div className="flex flex-col gap-1">
-                  <h3 className={`text-base font-bold ${TEXT_PRIMARY}`}>General</h3>
-                  <p className={`text-sm ${TEXT_SECONDARY}`}>{"Conversaciones Generales"}</p>
-                </div>
-              </div>
-
-              {/* Foros dinámicos */}
-              {forums.map((forum) => (
-                <div
-                  key={forum.id}
-                  onClick={() => handleForumClick(forum.id)}
-                  className={`flex flex-1 gap-3 rounded-xl p-4 flex-col cursor-pointer transition-all ${CARD_SURFACE_CLASS} ${activeForum === forum.id ? "border-amber-500 ring-2 ring-amber-500/50 shadow-lg" : "hover:shadow-lg"}`}
-                >
-                  <div className="text-amber-500 text-xl flex items-center"><Folder size={24} /></div>
-                  <div className="flex flex-col gap-1">
-                    <h3 className={`text-base font-bold ${TEXT_PRIMARY}`}>{forum.title}</h3>
-                    <p className={`text-sm ${TEXT_SECONDARY}`}>{forum.description || "Sin descripción"}</p>
-                    <p className={`text-xs mt-2 ${TEXT_SECONDARY}`}>{forum.postCount || 0} discusiones</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Publicaciones */}
-          <section className="flex flex-col gap-4 pt-4">
-            <div className="flex flex-wrap items-center justify-between gap-4 px-4 pb-3 pt-5">
-              <h2 className={`text-[22px] font-bold ${TEXT_PRIMARY}`}>
-                {activeForum === "general"
-                  ? "Publicaciones Generales"
-                  : activeForum === "all"
-                  ? "Todas las Publicaciones"
-                  : `Posts en: ${forums.find((f) => f.id === activeForum)?.title || "Foro"}`}
-              </h2>
-
-              <div className="flex gap-2 p-1 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-[#0A0A0A]">
-                <button
-                  onClick={filterRecent}
-                  className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${activeFilter === "recent" ? "bg-amber-500 text-white shadow-md" : `bg-transparent ${TEXT_SECONDARY} hover:bg-gray-100 dark:hover:bg-neutral-800`}`}
-                >
-                  Más recientes
-                </button>
-
-                <button
-                  onClick={filterPopular}
-                  className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${activeFilter === "popular" ? "bg-amber-500 text-white shadow-md" : `bg-transparent ${TEXT_SECONDARY} hover:bg-gray-100 dark:hover:bg-neutral-800`}`}
-                >
-                  Más populares
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 px-4">
-              {displayedPosts.length === 0 ? (
-                <div className={`p-6 rounded-xl text-center ${CARD_SURFACE_CLASS} border-dashed`}>
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-50 dark:bg-neutral-900 mb-4">
-                    <Hash size={24} className={TEXT_SECONDARY} />
-                  </div>
-                  <h3 className={`text-lg font-medium ${TEXT_PRIMARY}`}>No se encontraron publicaciones</h3>
-                  <p className={`${TEXT_SECONDARY} mt-1`}>Intenta cambiar el foro o el filtro.</p>
-                </div>
-              ) : (
-                displayedPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    onClick={() => navigate(`/community/post/${post.id}`)}
-                    className={`flex flex-col gap-4 p-6 rounded-xl cursor-pointer ${CARD_SURFACE_CLASS}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-full bg-cover bg-center flex-shrink-0"
-                        style={{
-                          backgroundImage: `url('${post.author?.avatar || "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%2210%22 fill=%22%23ccc%22/%3E%3C/circle%3E%3C/svg%3E"}')`
-                        }}
-                      />
-
-                      <div className="flex flex-col gap-[2px]">
-                        <p className={`font-semibold text-sm ${TEXT_PRIMARY}`}>{post.author?.name || "Anónimo"}</p>
-                        <p className={`text-sm ${TEXT_SECONDARY}`}>{timeAgo(post.created_at)}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <h3 className={`text-lg font-bold ${TEXT_PRIMARY} hover:text-amber-500 transition-colors`}>
-                        {post.title}
-                      </h3>
-                      <p className={`text-sm leading-relaxed line-clamp-2 ${TEXT_SECONDARY}`}>
-                        {post.description || post.content || "Sin descripción"}
-                      </p>
-                    </div>
-
-                    <div className={`flex items-center gap-6 ${TEXT_SECONDARY} pt-2`}>
-                      <div className="flex items-center gap-2 hover:text-amber-500 transition-colors">
-                        <ThumbsUp size={20} />
-                        <span className="text-sm font-medium">{post.likeCount || 0} Me gusta</span>
-                      </div>
-
-                      <div className="flex items-center gap-2 hover:text-amber-500 transition-colors">
-                        <MessageCircle size={20} />
-                        <span className="text-sm font-medium">{post.commentCount || 0} Comentarios</span>
-                      </div>
-
-                      {post.topic && (
-                        <div className="flex items-center gap-1 text-amber-500 text-xs font-medium bg-amber-500/10 px-2 py-1 rounded-full">
-                          <Hash size={16} />
-                          {post.topic.title}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-        </div>
+  if (error)
+    return (
+      <div className="p-10 text-center text-red-500">
+        Error cargando comunidad.
       </div>
-    </main>
-  </>  
+    )
+
+  return (
+    <>
+      {!isAuthenticated && <Navbar />}
+
+      <main className="min-h-screen bg-white dark:bg-[#0A0A0A] font-display flex flex-col">
+        <div className="flex-1 px-4 sm:px-8 md:px-12 lg:px-16 py-8">
+          <div className="max-w-7xl mx-auto flex flex-col gap-8">
+            {/* --- HEADER --- */}
+            <div className="flex flex-wrap items-end justify-between gap-4 py-4">
+              <div className="flex flex-col gap-2">
+                <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                  Portal Comunitario
+                </h1>
+                <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl">
+                  Conectando comunidades: Información clave y participación para
+                  el futuro de la infraestructura.
+                </p>
+              </div>
+
+              {/* Botón Crear Post */}
+              <button
+                onClick={() => navigate("/community/create")}
+                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white dark:text-black font-bold px-6 py-3 rounded-xl shadow-lg shadow-amber-500/20 transition-transform hover:scale-[1.02] active:scale-95"
+              >
+                <PlusCircle size={20} />
+                <span>Nuevo Post</span>
+              </button>
+            </div>
+
+            {/* --- GRID LAYOUT PRINCIPAL --- */}
+            {/* CLAVE: Quitamos 'items-start' para que el grid use 'stretch' por defecto */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* COLUMNA IZQUIERDA (2/3) */}
+              <div className="flex flex-col gap-8 lg:col-span-2">
+                <NewsSection />
+                <KPISection />
+              </div>
+
+              {/* COLUMNA DERECHA (1/3) */}
+              {/* CLAVE: h-full fuerza al aside a tomar la altura de la fila del grid */}
+              <aside className="lg:col-span-1 h-full w-full">
+                <ForumsSidebar
+                  forums={forums}
+                  activeForum={activeForum}
+                  onForumClick={handleForumClick}
+                />
+              </aside>
+            </div>
+
+            {/* --- FEED DE PUBLICACIONES (Bottom) --- */}
+            <section className="flex flex-col gap-6 pt-4">
+              <div className="flex items-center gap-4 px-1 border-b border-gray-200 dark:border-white/10 pb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {activeForum === "general"
+                    ? "Discusión General"
+                    : forums.find((f) => f.id === activeForum)?.title ||
+                      "Posts"}
+                </h2>
+                <span className="bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded-full">
+                  {displayedPosts.length} posts
+                </span>
+              </div>
+
+              {/* Lista de Posts */}
+              <div className="flex flex-col gap-4">
+                {displayedPosts.length === 0 ? (
+                  <div className="p-12 text-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No hay publicaciones en este foro aún.
+                    </p>
+                  </div>
+                ) : (
+                  displayedPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      onClick={() => navigate(`/community/post/${post.id}`)}
+                      className="group flex flex-col gap-4 p-6 rounded-xl bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 shadow-sm hover:shadow-md hover:border-amber-500/50 transition-all cursor-pointer"
+                    >
+                      {/* Post Header */}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-full bg-cover bg-center shrink-0 border border-gray-200 dark:border-white/10"
+                          style={{
+                            backgroundImage: `url('${
+                              post.author?.avatar ||
+                              "https://ui-avatars.com/api/?name=" +
+                                (post?.userName || "User") +
+                                "&background=random"
+                            }')`,
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <p className="font-bold text-sm text-gray-900 dark:text-white group-hover:text-amber-500 transition-colors">
+                            {post?.userName || "Anónimo"}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            {timeAgo(post.created_at)} •{" "}
+                            {post.topic?.title || "General"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-tight">
+                          {post.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
+                          {post.description ||
+                            post.content ||
+                            "Sin contenido previo."}
+                        </p>
+                      </div>
+
+                      {/* Footer Actions */}
+                      <div className="flex items-center gap-6 pt-2 border-t border-gray-100 dark:border-white/5 mt-2">
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 group-hover:text-amber-500 transition-colors">
+                          <ThumbsUp size={18} />
+                          <span className="text-sm font-medium">
+                            {post.likeCount || 0}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 group-hover:text-amber-500 transition-colors">
+                          <MessageCircle size={18} />
+                          <span className="text-sm font-medium">
+                            {post.commentCount || 0} comentarios
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </>
   )
 }
 
